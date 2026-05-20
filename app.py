@@ -13,8 +13,8 @@ warnings.filterwarnings("ignore")
 
 st.set_page_config(
     page_title="AI Resume Analyzer",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    page_icon="📄",
+    layout="wide"
 )
 
 # ================= LOAD CSS ================= #
@@ -40,105 +40,150 @@ tfidf = pickle.load(
     open("models/tfidf.pkl", "rb")
 )
 
-# ================= SKILLS DATABASE ================= #
+# ================= OCCUPATION SKILLS DATABASE ================= #
 
 skills_db = {
 
-    "data scientist": [
-        "python",
-        "machine learning",
-        "sql",
-        "tensorflow",
-        "nlp",
-        "deep learning",
-        "statistics",
-        "pandas"
+    # TECH
+
+    "software engineer": [
+        "python", "java", "sql", "git", "api"
     ],
 
     "web developer": [
-        "html",
-        "css",
-        "javascript",
-        "react",
-        "node.js",
-        "mongodb"
+        "html", "css", "javascript", "react"
     ],
 
-    "software engineer": [
-        "java",
-        "python",
-        "c++",
-        "sql",
-        "git"
+    "data scientist": [
+        "machine learning", "python", "pandas", "sql"
     ],
+
+    "cyber security": [
+        "linux", "network security", "firewall"
+    ],
+
+    # ENGINEERING
 
     "civil engineer": [
-        "autocad",
-        "construction",
-        "surveying",
-        "site management"
+        "autocad", "construction", "surveying"
     ],
 
     "mechanical engineer": [
-        "solidworks",
-        "manufacturing",
-        "machine design",
-        "thermodynamics"
+        "machine design", "manufacturing"
     ],
 
     "electrical engineer": [
-        "power systems",
-        "matlab",
-        "circuit design"
+        "circuits", "matlab", "power systems"
     ],
+
+    # MEDICAL
 
     "doctor": [
-        "patient care",
-        "diagnosis",
-        "clinical experience"
+        "patient care", "diagnosis"
     ],
 
-    "teacher": [
-        "communication",
-        "classroom management",
-        "presentation"
+    "nurse": [
+        "patient care", "medical assistance"
     ],
+
+    "pharmacist": [
+        "medicine", "drug knowledge"
+    ],
+
+    # BUSINESS
 
     "accountant": [
-        "tally",
-        "gst",
-        "taxation",
-        "excel"
+        "gst", "taxation", "excel"
     ],
 
     "marketing": [
-        "seo",
-        "branding",
-        "social media"
+        "seo", "branding"
     ],
 
-    "bba": [
-        "management",
-        "leadership",
-        "communication"
+    "hr": [
+        "recruitment", "management"
+    ],
+
+    "sales": [
+        "communication", "negotiation"
+    ],
+
+    # CREATIVE
+
+    "graphic designer": [
+        "photoshop", "illustrator"
+    ],
+
+    "video editor": [
+        "editing", "premiere pro"
+    ],
+
+    "artist": [
+        "creativity", "drawing"
+    ],
+
+    "painter": [
+        "wall painting", "finishing"
+    ],
+
+    # SKILLED WORK
+
+    "carpenter": [
+        "woodworking", "furniture"
+    ],
+
+    "plumber": [
+        "pipe fitting", "maintenance"
+    ],
+
+    "electrician": [
+        "wiring", "electrical repair"
+    ],
+
+    "welder": [
+        "metal fabrication", "welding"
+    ],
+
+    "driver": [
+        "driving", "vehicle maintenance"
+    ],
+
+    "mechanic": [
+        "repair", "engine"
+    ],
+
+    # EDUCATION
+
+    "teacher": [
+        "communication", "presentation"
+    ],
+
+    "professor": [
+        "research", "education"
+    ],
+
+    # AGRICULTURE
+
+    "farmer": [
+        "farming", "soil", "crop management"
     ],
 
     "agriculture": [
-        "crop management",
-        "soil science",
-        "farming"
+        "crop production", "soil science"
     ],
 
-    "carpenter": [
-        "woodworking",
-        "furniture design",
-        "measurement"
+    # HOTEL
+
+    "chef": [
+        "cooking", "food preparation"
     ],
 
-    "arts": [
-        "creativity",
-        "design",
-        "presentation"
+    "waiter": [
+        "customer service"
+    ],
+
+    "hotel manager": [
+        "management", "hospitality"
     ]
 }
 
@@ -164,55 +209,65 @@ def extract_text_from_pdf(uploaded_file):
 
 def check_spelling(text):
 
-    blob = TextBlob(text)
+    try:
 
-    corrected = str(blob.correct())
+        blob = TextBlob(text)
 
-    return corrected
+        corrected = str(blob.correct())
+
+        return corrected
+
+    except:
+
+        return text
 
 # ================= HEADER ================= #
 
 st.title("AI Resume Analyzer")
 
-st.caption(
-    "Professional ATS Resume Evaluation Platform"
+st.markdown(
+    """
+    <div class="subtitle">
+    Professional ATS Resume Evaluation Platform
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 st.markdown("---")
 
 # ================= TOP METRICS ================= #
 
-col1, col2, col3 = st.columns(3)
+m1, m2, m3 = st.columns(3)
 
-with col1:
-
+with m1:
     st.metric("AI Model", "Active")
 
-with col2:
-
+with m2:
     st.metric("ATS Engine", "Running")
 
-with col3:
-
-    st.metric("Careers", "15+")
+with m3:
+    st.metric("Occupations", "30+")
 
 st.markdown("---")
 
-# ================= INPUT SECTION ================= #
+# ================= CENTERED INPUT SECTION ================= #
 
-st.subheader("Resume Upload")
+center1, center2, center3 = st.columns([1, 6, 1])
 
-job_role = st.text_input(
-    "Target Job Role",
-    placeholder="Example: Data Scientist"
-)
+with center2:
 
-uploaded_file = st.file_uploader(
-    "Upload Resume (PDF)",
-    type=["pdf"]
-)
+    st.subheader("Upload Resume")
 
-st.markdown("<br>", unsafe_allow_html=True)
+    job_role = st.text_input(
+        "Target Occupation / Job Role",
+        placeholder="Doctor, Carpenter, Software Engineer, Painter..."
+    )
+
+    uploaded_file = st.file_uploader(
+        "Upload Resume PDF",
+        type=["pdf"]
+    )
 
 # ================= ANALYSIS ================= #
 
@@ -228,33 +283,27 @@ if uploaded_file is not None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    # ================= CENTER CONTENT ================= #
 
-    # ================= LEFT SECTION ================= #
+    left, main, right = st.columns([1, 8, 1])
 
-    with col1:
+    with main:
 
-        st.subheader(
-            "Extracted Resume Content"
-        )
+        # ================= RESUME CONTENT ================= #
+
+        st.subheader("Resume Content")
 
         st.text_area(
-            "Resume Text",
+            "Extracted Resume Text",
             resume_text,
-            height=600
+            height=300
         )
 
-    # ================= RIGHT SECTION ================= #
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    with col2:
-
-        st.subheader(
-            "Resume Analysis"
-        )
+        # ================= ANALYZE BUTTON ================= #
 
         if st.button("Analyze Resume"):
-
-            # ================= ATS SCORE ================= #
 
             combined_text = (
                 resume_text + " " + job_role
@@ -270,7 +319,13 @@ if uploaded_file is not None:
 
             ats_score = int(prediction * 100)
 
-            # ================= ATS GAUGE ================= #
+            # ================= AI ANALYSIS ================= #
+
+            st.markdown("---")
+
+            st.subheader("AI Resume Analysis")
+
+            # ================= ATS SCORE ================= #
 
             fig = go.Figure(go.Indicator(
 
@@ -320,7 +375,7 @@ if uploaded_file is not None:
                     'color': "white"
                 },
 
-                height=320
+                height=350
             )
 
             st.plotly_chart(
@@ -332,9 +387,7 @@ if uploaded_file is not None:
 
             st.markdown("---")
 
-            st.subheader(
-                "Missing Skills"
-            )
+            st.subheader("Missing Skills")
 
             resume_lower = resume_text.lower()
 
@@ -363,7 +416,7 @@ if uploaded_file is not None:
                     "No major skills missing."
                 )
 
-            # ================= SPELL CHECK ================= #
+            # ================= SPELLING ================= #
 
             st.markdown("---")
 
@@ -382,7 +435,7 @@ if uploaded_file is not None:
                 )
 
                 st.text_area(
-                    "Suggested Corrected Text",
+                    "Corrected Resume",
                     corrected_text,
                     height=200
                 )
@@ -390,7 +443,7 @@ if uploaded_file is not None:
             else:
 
                 st.success(
-                    "No major spelling issues detected."
+                    "No major spelling issues found."
                 )
 
             # ================= RESUME STRENGTH ================= #
@@ -403,20 +456,19 @@ if uploaded_file is not None:
 
             strength = 0
 
-            if "project" in resume_lower:
-                strength += 20
+            keywords = [
+                "project",
+                "experience",
+                "skills",
+                "education",
+                "certificate"
+            ]
 
-            if "experience" in resume_lower:
-                strength += 20
+            for word in keywords:
 
-            if "skills" in resume_lower:
-                strength += 20
+                if word in resume_lower:
 
-            if "education" in resume_lower:
-                strength += 20
-
-            if ats_score > 70:
-                strength += 20
+                    strength += 20
 
             st.progress(
                 strength / 100
@@ -426,22 +478,22 @@ if uploaded_file is not None:
                 f"Resume Strength: {strength}%"
             )
 
-            # ================= SUGGESTIONS ================= #
+            # ================= IMPROVEMENTS ================= #
 
             st.markdown("---")
 
             st.subheader(
-                "Resume Suggestions"
+                "Improvement Suggestions"
             )
 
             if ats_score < 50:
 
                 st.error(
-                    "Add more relevant skills, certifications, and projects."
+                    "Add more role-specific skills and projects."
                 )
 
-                st.info(
-                    "Include measurable achievements and role-specific keywords."
+                st.warning(
+                    "Resume needs stronger ATS keywords."
                 )
 
             elif ats_score < 75:
@@ -451,61 +503,27 @@ if uploaded_file is not None:
                 )
 
                 st.info(
-                    "Improve project descriptions and technical skills."
+                    "Improve technical skills and achievements."
                 )
 
             else:
 
                 st.success(
-                    "Resume appears optimized for ATS systems."
+                    "Resume is highly optimized."
                 )
 
                 st.info(
-                    "Maintain strong formatting and concise descriptions."
+                    "Maintain concise professional formatting."
                 )
 
-            # ================= RECOMMENDATIONS ================= #
+            # ================= FINAL RECOMMENDATION ================= #
 
             st.markdown("---")
 
             st.subheader(
-                "Recommended Resume Additions"
+                "Final AI Recommendation"
             )
 
-            recommendations = {
-
-                "data scientist": [
-                    "Add Machine Learning projects",
-                    "Include SQL and Python certifications",
-                    "Mention data visualization tools"
-                ],
-
-                "web developer": [
-                    "Add portfolio links",
-                    "Include React or Node.js projects",
-                    "Mention frontend frameworks"
-                ],
-
-                "doctor": [
-                    "Add clinical experience",
-                    "Mention certifications",
-                    "Include patient care achievements"
-                ],
-
-                "civil engineer": [
-                    "Mention AutoCAD expertise",
-                    "Add construction/site projects",
-                    "Include surveying knowledge"
-                ]
-            }
-
-            role_tips = recommendations.get(
-                job_role.lower(),
-                [
-                    "Add role-specific achievements and certifications."
-                ]
+            st.info(
+                "Use measurable achievements, certifications, and role-specific keywords to improve hiring chances."
             )
-
-            for tip in role_tips:
-
-                st.info(tip)
