@@ -4,19 +4,24 @@ import streamlit as st
 import PyPDF2
 import pickle
 import plotly.graph_objects as go
-import language_tool_python
+from textblob import TextBlob
+import warnings
 
-# ---------------- PAGE CONFIG ---------------- #
+warnings.filterwarnings("ignore")
+
+# ================= PAGE CONFIG ================= #
 
 st.set_page_config(
     page_title="AI Resume Analyzer",
     layout="wide"
 )
 
-# ---------------- LOAD CSS ---------------- #
+# ================= LOAD CSS ================= #
 
 def load_css():
+
     with open("assets/style.css") as f:
+
         st.markdown(
             f"<style>{f.read()}</style>",
             unsafe_allow_html=True
@@ -24,16 +29,17 @@ def load_css():
 
 load_css()
 
-# ---------------- LOAD ML MODEL ---------------- #
+# ================= LOAD MODEL ================= #
 
-model = pickle.load(open("models/model.pkl", "rb"))
-tfidf = pickle.load(open("models/tfidf.pkl", "rb"))
+model = pickle.load(
+    open("models/model.pkl", "rb")
+)
 
-# ---------------- LOAD GRAMMAR TOOL ---------------- #
+tfidf = pickle.load(
+    open("models/tfidf.pkl", "rb")
+)
 
-tool = language_tool_python.LanguageTool('en-US')
-
-# ---------------- SKILLS DATABASE ---------------- #
+# ================= SKILLS DATABASE ================= #
 
 skills_db = {
 
@@ -62,116 +68,80 @@ skills_db = {
         "python",
         "c++",
         "sql",
-        "git",
-        "problem solving"
+        "git"
     ],
 
     "civil engineer": [
         "autocad",
         "construction",
-        "site management",
-        "structural design",
-        "surveying"
+        "surveying",
+        "site management"
     ],
 
     "mechanical engineer": [
-        "autocad",
         "solidworks",
         "manufacturing",
-        "thermodynamics",
-        "machine design"
+        "machine design",
+        "thermodynamics"
     ],
 
     "electrical engineer": [
-        "circuit design",
         "power systems",
         "matlab",
-        "electrical maintenance"
+        "circuit design"
     ],
 
     "doctor": [
         "patient care",
         "diagnosis",
-        "medical knowledge",
-        "communication",
         "clinical experience"
-    ],
-
-    "nurse": [
-        "patient care",
-        "medical support",
-        "communication",
-        "critical care"
     ],
 
     "teacher": [
         "communication",
         "classroom management",
-        "presentation",
-        "subject knowledge"
+        "presentation"
     ],
 
     "accountant": [
         "tally",
         "gst",
         "taxation",
-        "excel",
-        "financial reporting"
-    ],
-
-    "bba": [
-        "management",
-        "communication",
-        "marketing",
-        "leadership",
-        "business strategy"
+        "excel"
     ],
 
     "marketing": [
         "seo",
-        "social media",
         "branding",
-        "content marketing",
-        "communication"
+        "social media"
     ],
 
-    "hr": [
-        "recruitment",
-        "communication",
-        "employee management",
-        "leadership"
+    "bba": [
+        "management",
+        "leadership",
+        "communication"
     ],
 
     "agriculture": [
         "crop management",
         "soil science",
-        "farming",
-        "irrigation"
+        "farming"
     ],
 
     "carpenter": [
         "woodworking",
         "furniture design",
-        "cutting",
         "measurement"
     ],
 
     "arts": [
         "creativity",
         "design",
-        "communication",
         "presentation"
-    ],
-
-    "commerce": [
-        "accounting",
-        "finance",
-        "business studies",
-        "economics"
     ]
 }
 
-# ---------------- PDF EXTRACTION ---------------- #
+# ================= PDF TEXT EXTRACTION ================= #
 
 def extract_text_from_pdf(uploaded_file):
 
@@ -184,19 +154,22 @@ def extract_text_from_pdf(uploaded_file):
         extracted = page.extract_text()
 
         if extracted:
+
             text += extracted
 
     return text
 
-# ---------------- GRAMMAR CHECK ---------------- #
+# ================= SPELL CHECK ================= #
 
-def grammar_check(text):
+def check_spelling(text):
 
-    matches = tool.check(text)
+    blob = TextBlob(text)
 
-    return matches[:10]
+    corrected = str(blob.correct())
 
-# ---------------- HEADER ---------------- #
+    return corrected
+
+# ================= TITLE ================= #
 
 st.title("AI Resume Analyzer")
 
@@ -205,7 +178,8 @@ st.caption(
 )
 
 st.markdown("---")
-# ---------------- SIDEBAR ---------------- #
+
+# ================= SIDEBAR ================= #
 
 st.sidebar.title("AI Dashboard")
 
@@ -232,7 +206,7 @@ st.sidebar.info(
     "Management"
 )
 
-# ---------------- INPUTS ---------------- #
+# ================= INPUTS ================= #
 
 job_role = st.text_input(
     "Target Job Role",
@@ -244,7 +218,7 @@ uploaded_file = st.file_uploader(
     type=["pdf"]
 )
 
-# ---------------- MAIN ANALYSIS ---------------- #
+# ================= MAIN ANALYSIS ================= #
 
 if uploaded_file is not None:
 
@@ -254,7 +228,7 @@ if uploaded_file is not None:
 
     col1, col2 = st.columns([2, 1])
 
-    # ---------------- LEFT SIDE ---------------- #
+    # ================= LEFT SIDE ================= #
 
     with col1:
 
@@ -266,7 +240,7 @@ if uploaded_file is not None:
             height=500
         )
 
-    # ---------------- RIGHT SIDE ---------------- #
+    # ================= RIGHT SIDE ================= #
 
     with col2:
 
@@ -274,20 +248,28 @@ if uploaded_file is not None:
 
         if st.button("Analyze Resume"):
 
-            # ---------------- ML ATS SCORE ---------------- #
+            # ================= ATS SCORE ================= #
 
-            combined_text = resume_text + " " + job_role
+            combined_text = (
+                resume_text + " " + job_role
+            )
 
-            vector = tfidf.transform([combined_text])
+            vector = tfidf.transform(
+                [combined_text]
+            )
 
-            prediction = model.predict_proba(vector)[0][1]
+            prediction = model.predict_proba(
+                vector
+            )[0][1]
 
             ats_score = int(prediction * 100)
 
-            # ---------------- ATS GAUGE ---------------- #
+            # ================= ATS GAUGE ================= #
 
             fig = go.Figure(go.Indicator(
+
                 mode="gauge+number",
+
                 value=ats_score,
 
                 title={
@@ -295,6 +277,7 @@ if uploaded_file is not None:
                 },
 
                 gauge={
+
                     'axis': {
                         'range': [0, 100]
                     },
@@ -333,7 +316,7 @@ if uploaded_file is not None:
                 use_container_width=True
             )
 
-            # ---------------- MISSING SKILLS ---------------- #
+            # ================= MISSING SKILLS ================= #
 
             st.markdown("---")
 
@@ -362,29 +345,39 @@ if uploaded_file is not None:
 
             else:
 
-                st.success("No major skills missing.")
+                st.success(
+                    "No major skills missing."
+                )
 
-            # ---------------- GRAMMAR CHECK ---------------- #
+            # ================= SPELL CHECK ================= #
 
             st.markdown("---")
 
-            st.subheader("Grammar Suggestions")
+            st.subheader("Spelling Suggestions")
 
-            grammar_errors = grammar_check(resume_text)
+            corrected_text = check_spelling(
+                resume_text
+            )
 
-            if grammar_errors:
+            if corrected_text != resume_text:
 
-                for error in grammar_errors:
+                st.info(
+                    "Possible spelling improvements detected."
+                )
 
-                    st.warning(error.message)
+                st.text_area(
+                    "Suggested Corrected Text",
+                    corrected_text,
+                    height=200
+                )
 
             else:
 
                 st.success(
-                    "No major grammar issues detected."
+                    "No major spelling issues detected."
                 )
 
-            # ---------------- RESUME STRENGTH ---------------- #
+            # ================= RESUME STRENGTH ================= #
 
             st.markdown("---")
 
@@ -407,11 +400,15 @@ if uploaded_file is not None:
             if ats_score > 70:
                 strength += 20
 
-            st.progress(strength / 100)
+            st.progress(
+                strength / 100
+            )
 
-            st.write(f"Resume Strength: {strength}%")
+            st.write(
+                f"Resume Strength: {strength}%"
+            )
 
-            # ---------------- SUGGESTIONS ---------------- #
+            # ================= SUGGESTIONS ================= #
 
             st.markdown("---")
 
@@ -447,11 +444,13 @@ if uploaded_file is not None:
                     "Maintain strong formatting and concise descriptions."
                 )
 
-            # ---------------- ROLE RECOMMENDATIONS ---------------- #
+            # ================= ROLE RECOMMENDATIONS ================= #
 
             st.markdown("---")
 
-            st.subheader("Recommended Resume Additions")
+            st.subheader(
+                "Recommended Resume Additions"
+            )
 
             recommendations = {
 
@@ -482,7 +481,9 @@ if uploaded_file is not None:
 
             role_tips = recommendations.get(
                 job_role.lower(),
-                ["Add role-specific achievements and certifications."]
+                [
+                    "Add role-specific achievements and certifications."
+                ]
             )
 
             for tip in role_tips:
