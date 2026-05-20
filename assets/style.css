@@ -1,0 +1,100 @@
+/* ====================== style.css ====================== */
+
+.stApp {
+    background: linear-gradient(to right, #0f172a, #111827);
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Titles */
+
+h1, h2, h3 {
+    color: white;
+    font-weight: 700;
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    border-right: 1px solid #1f2937;
+}
+
+/* Inputs */
+
+.stTextInput input {
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+textarea {
+    background-color: #1e293b !important;
+    color: white !important;
+    border-radius: 10px !important;
+}
+
+/* File uploader */
+
+[data-testid="stFileUploader"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #334155;
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+/* Buttons */
+
+.stButton button {
+    width: 100%;
+    background: linear-gradient(to right, #2563eb, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.stButton button:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
+}
+
+/* Metric Cards */
+
+[data-testid="metric-container"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #334155;
+    padding: 20px;
+    border-radius: 18px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 4px 30px rgba(0,0,0,0.2);
+}
+
+/* Alerts */
+
+.stAlert {
+    border-radius: 12px;
+}
+
+/* Main spacing */
+
+.block-container {
+    padding-top: 2rem;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 10px;
+}
