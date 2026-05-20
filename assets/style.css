@@ -1,100 +1,158 @@
 /* ====================== style.css ====================== */
 
 .stApp {
-    background: linear-gradient(to right, #0f172a, #111827);
+
+    background: linear-gradient(
+        to right,
+        #020617,
+        #07152f
+    );
+
     color: white;
-    font-family: 'Segoe UI', sans-serif;
 }
 
-/* Titles */
+/* ================= MAIN CONTAINER ================= */
 
-h1, h2, h3 {
-    color: white;
-    font-weight: 700;
+.block-container {
+
+    max-width: 1400px;
+
+    padding-top: 2rem;
+
+    padding-left: 4rem;
+
+    padding-right: 4rem;
+
+    margin: auto;
 }
 
-/* Sidebar */
+/* ================= SIDEBAR ================= */
 
 section[data-testid="stSidebar"] {
-    background-color: #111827;
-    border-right: 1px solid #1f2937;
+
+    background: #071126;
+
+    border-right: 1px solid #1e293b;
+
+    width: 260px !important;
 }
 
-/* Inputs */
+/* ================= TITLE ================= */
+
+h1 {
+
+    color: white !important;
+
+    font-weight: 700 !important;
+}
+
+/* ================= INPUT BOX ================= */
 
 .stTextInput input {
-    background-color: #1e293b;
-    color: white;
-    border: 1px solid #334155;
-    border-radius: 10px;
-    padding: 10px;
-}
 
-textarea {
     background-color: #1e293b !important;
+
     color: white !important;
-    border-radius: 10px !important;
-}
 
-/* File uploader */
+    border-radius: 10px;
 
-[data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.05);
     border: 1px solid #334155;
-    border-radius: 15px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
+
+    padding: 12px;
 }
 
-/* Buttons */
+/* ================= FILE UPLOADER ================= */
+
+.stFileUploader {
+
+    background: rgba(255,255,255,0.03);
+
+    padding: 18px;
+
+    border-radius: 16px;
+
+    border: 1px solid #334155;
+}
+
+/* ================= BUTTON ================= */
 
 .stButton button {
-    width: 100%;
-    background: linear-gradient(to right, #2563eb, #06b6d4);
+
+    background: linear-gradient(
+        90deg,
+        #06b6d4,
+        #2563eb
+    );
+
     color: white;
+
     border: none;
+
     border-radius: 12px;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    transition: 0.3s;
+
+    padding: 12px 20px;
+
+    font-weight: bold;
+
+    width: 100%;
+
+    transition: 0.3s ease;
 }
 
 .stButton button:hover {
-    transform: scale(1.02);
-    box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
+
+    transform: translateY(-2px);
+
+    background: linear-gradient(
+        90deg,
+        #0891b2,
+        #1d4ed8
+    );
 }
 
-/* Metric Cards */
+/* ================= TEXT AREA ================= */
+
+textarea {
+
+    background-color: #111827 !important;
+
+    color: white !important;
+
+    border-radius: 12px !important;
+
+    border: 1px solid #334155 !important;
+}
+
+/* ================= METRIC CARDS ================= */
 
 [data-testid="metric-container"] {
-    background: rgba(255,255,255,0.05);
+
+    background: rgba(255,255,255,0.03);
+
+    padding: 15px;
+
+    border-radius: 15px;
+
     border: 1px solid #334155;
-    padding: 20px;
-    border-radius: 18px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0px 4px 30px rgba(0,0,0,0.2);
 }
 
-/* Alerts */
+/* ================= SUCCESS / WARNING ================= */
 
 .stAlert {
+
     border-radius: 12px;
 }
 
-/* Main spacing */
-
-.block-container {
-    padding-top: 2rem;
-}
-
-/* Scrollbar */
+/* ================= SCROLLBAR ================= */
 
 ::-webkit-scrollbar {
+
     width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #475569;
+
+    background: #334155;
+
     border-radius: 10px;
 }
