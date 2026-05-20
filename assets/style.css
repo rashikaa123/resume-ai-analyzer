@@ -13,19 +13,43 @@
 
 /* ================= MAIN CONTAINER ================= */
 
-.block-container {
+/* ================= MAIN PAGE FIX ================= */
 
-    max-width: 1400px;
+.main .block-container {
 
-    padding-top: 2rem;
+    max-width: 95% !important;
 
-    padding-left: 4rem;
+    padding-left: 5rem !important;
 
-    padding-right: 4rem;
+    padding-right: 5rem !important;
 
-    margin: auto;
+    padding-top: 2rem !important;
+
+    margin: auto !important;
 }
 
+/* ================= REMOVE SIDE SHIFT ================= */
+
+section.main {
+
+    margin-left: 0rem !important;
+
+    padding-left: 0rem !important;
+}
+
+/* ================= FULL WIDTH CONTENT ================= */
+
+[data-testid="stHorizontalBlock"] {
+
+    width: 100% !important;
+}
+
+/* ================= CENTER EVERYTHING ================= */
+
+.element-container {
+
+    width: 100% !important;
+}
 /* ================= SIDEBAR ================= */
 
 section[data-testid="stSidebar"] {

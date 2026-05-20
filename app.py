@@ -238,9 +238,7 @@ if uploaded_file is not None:
 
     # ================= CENTERED LAYOUT ================= #
 
-    left_space, main_col, right_space = st.columns(
-        [0.2, 4, 0.2]
-    )
+    col1, col2 = st.columns([3,2])    
 
     with main_col:
 
