@@ -13,52 +13,15 @@
 
 /* ================= MAIN CONTAINER ================= */
 
-/* ================= MAIN PAGE FIX ================= */
-
 .main .block-container {
 
-    max-width: 95% !important;
-
-    padding-left: 5rem !important;
-
-    padding-right: 5rem !important;
+    max-width: 1200px !important;
 
     padding-top: 2rem !important;
 
+    padding-bottom: 2rem !important;
+
     margin: auto !important;
-}
-
-/* ================= REMOVE SIDE SHIFT ================= */
-
-section.main {
-
-    margin-left: 0rem !important;
-
-    padding-left: 0rem !important;
-}
-
-/* ================= FULL WIDTH CONTENT ================= */
-
-[data-testid="stHorizontalBlock"] {
-
-    width: 100% !important;
-}
-
-/* ================= CENTER EVERYTHING ================= */
-
-.element-container {
-
-    width: 100% !important;
-}
-/* ================= SIDEBAR ================= */
-
-section[data-testid="stSidebar"] {
-
-    background: #071126;
-
-    border-right: 1px solid #1e293b;
-
-    width: 260px !important;
 }
 
 /* ================= TITLE ================= */
@@ -68,9 +31,31 @@ h1 {
     color: white !important;
 
     font-weight: 700 !important;
+
+    text-align: center;
 }
 
-/* ================= INPUT BOX ================= */
+/* ================= CAPTION ================= */
+
+p {
+
+    color: #cbd5e1;
+}
+
+/* ================= METRIC CARDS ================= */
+
+[data-testid="metric-container"] {
+
+    background: rgba(255,255,255,0.04);
+
+    border: 1px solid #334155;
+
+    padding: 15px;
+
+    border-radius: 15px;
+}
+
+/* ================= INPUT ================= */
 
 .stTextInput input {
 
@@ -91,16 +76,18 @@ h1 {
 
     background: rgba(255,255,255,0.03);
 
-    padding: 18px;
-
-    border-radius: 16px;
-
     border: 1px solid #334155;
+
+    border-radius: 15px;
+
+    padding: 15px;
 }
 
 /* ================= BUTTON ================= */
 
 .stButton button {
+
+    width: 100%;
 
     background: linear-gradient(
         90deg,
@@ -112,20 +99,14 @@ h1 {
 
     border: none;
 
-    border-radius: 12px;
+    border-radius: 10px;
 
-    padding: 12px 20px;
+    padding: 12px;
 
     font-weight: bold;
-
-    width: 100%;
-
-    transition: 0.3s ease;
 }
 
 .stButton button:hover {
-
-    transform: translateY(-2px);
 
     background: linear-gradient(
         90deg,
@@ -142,41 +123,14 @@ textarea {
 
     color: white !important;
 
-    border-radius: 12px !important;
+    border-radius: 10px !important;
 
     border: 1px solid #334155 !important;
 }
 
-/* ================= METRIC CARDS ================= */
-
-[data-testid="metric-container"] {
-
-    background: rgba(255,255,255,0.03);
-
-    padding: 15px;
-
-    border-radius: 15px;
-
-    border: 1px solid #334155;
-}
-
-/* ================= SUCCESS / WARNING ================= */
+/* ================= ALERTS ================= */
 
 .stAlert {
 
     border-radius: 12px;
-}
-
-/* ================= SCROLLBAR ================= */
-
-::-webkit-scrollbar {
-
-    width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-
-    background: #334155;
-
-    border-radius: 10px;
 }
