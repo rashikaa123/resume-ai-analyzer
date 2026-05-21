@@ -1,529 +1,413 @@
-# ====================== app.py ======================
-
 import streamlit as st
-import PyPDF2
-import pickle
-import plotly.graph_objects as go
-from textblob import TextBlob
-import warnings
-
-warnings.filterwarnings("ignore")
-
-# ================= PAGE CONFIG ================= #
-
-st.set_page_config(
-    page_title="AI Resume Analyzer",
-    page_icon="📄",
-    layout="wide"
-)
-
-# ================= LOAD CSS ================= #
-
-def load_css():
-
-    with open("assets/style.css") as f:
-
-        st.markdown(
-            f"<style>{f.read()}</style>",
-            unsafe_allow_html=True
-        )
-
-load_css()
-
-# ================= LOAD MODEL ================= #
-
-model = pickle.load(
-    open("models/model.pkl", "rb")
-)
-
-tfidf = pickle.load(
-    open("models/tfidf.pkl", "rb")
-)
-
-# ================= OCCUPATION SKILLS DATABASE ================= #
-
-skills_db = {
-
-    # TECH
-
-    "software engineer": [
-        "python", "java", "sql", "git", "api"
-    ],
-
-    "web developer": [
-        "html", "css", "javascript", "react"
-    ],
-
-    "data scientist": [
-        "machine learning", "python", "pandas", "sql"
-    ],
-
-    "cyber security": [
-        "linux", "network security", "firewall"
-    ],
-
-    # ENGINEERING
-
-    "civil engineer": [
-        "autocad", "construction", "surveying"
-    ],
-
-    "mechanical engineer": [
-        "machine design", "manufacturing"
-    ],
-
-    "electrical engineer": [
-        "circuits", "matlab", "power systems"
-    ],
-
-    # MEDICAL
-
-    "doctor": [
-        "patient care", "diagnosis"
-    ],
-
-    "nurse": [
-        "patient care", "medical assistance"
-    ],
-
-    "pharmacist": [
-        "medicine", "drug knowledge"
-    ],
-
-    # BUSINESS
-
-    "accountant": [
-        "gst", "taxation", "excel"
-    ],
-
-    "marketing": [
-        "seo", "branding"
-    ],
-
-    "hr": [
-        "recruitment", "management"
-    ],
-
-    "sales": [
-        "communication", "negotiation"
-    ],
-
-    # CREATIVE
-
-    "graphic designer": [
-        "photoshop", "illustrator"
-    ],
-
-    "video editor": [
-        "editing", "premiere pro"
-    ],
-
-    "artist": [
-        "creativity", "drawing"
-    ],
-
-    "painter": [
-        "wall painting", "finishing"
-    ],
-
-    # SKILLED WORK
-
-    "carpenter": [
-        "woodworking", "furniture"
-    ],
-
-    "plumber": [
-        "pipe fitting", "maintenance"
-    ],
-
-    "electrician": [
-        "wiring", "electrical repair"
-    ],
-
-    "welder": [
-        "metal fabrication", "welding"
-    ],
-
-    "driver": [
-        "driving", "vehicle maintenance"
-    ],
-
-    "mechanic": [
-        "repair", "engine"
-    ],
-
-    # EDUCATION
-
-    "teacher": [
-        "communication", "presentation"
-    ],
-
-    "professor": [
-        "research", "education"
-    ],
-
-    # AGRICULTURE
-
-    "farmer": [
-        "farming", "soil", "crop management"
-    ],
-
-    "agriculture": [
-        "crop production", "soil science"
-    ],
-
-    # HOTEL
-
-    "chef": [
-        "cooking", "food preparation"
-    ],
-
-    "waiter": [
-        "customer service"
-    ],
-
-    "hotel manager": [
-        "management", "hospitality"
-    ]
-}
-
-# ================= PDF TEXT EXTRACTION ================= #
-
-def extract_text_from_pdf(uploaded_file):
-
-    reader = PyPDF2.PdfReader(uploaded_file)
-
-    text = ""
-
-    for page in reader.pages:
-
-        extracted = page.extract_text()
-
-        if extracted:
-
-            text += extracted
-
-    return text
-
-# ================= SPELL CHECK ================= #
-
-def check_spelling(text):
-
-    try:
-
-        blob = TextBlob(text)
-
-        corrected = str(blob.correct())
-
-        return corrected
-
-    except:
-
-        return text
-
-# ================= HEADER ================= #
-
-st.title("AI Resume Analyzer")
-
+import pdfplumber
+import re
+import random
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# -----------------------------
+# PAGE CONFIG
+# -----------------------------
+st.set_page_config(page_title="AI Resume Analyzer", layout="wide")
+
+# -----------------------------
+# CUSTOM BACKGROUND + UI DESIGN
+# -----------------------------
 st.markdown(
     """
-    <div class="subtitle">
-    Professional ATS Resume Evaluation Platform
-    </div>
+    <style>
+    .stApp {
+        background: linear-gradient(to right, #141e30, #243b55);
+        color: white;
+    }
+
+    h1, h2, h3 {
+        color: #ffffff;
+    }
+
+    .stButton>button {
+        background-color: #00c6ff;
+        color: white;
+        border-radius: 10px;
+        height: 3em;
+        width: 100%;
+        font-size: 18px;
+    }
+
+    .stProgress > div > div > div > div {
+        background-color: #00ff99;
+    }
+
+    .css-1d391kg {
+        background-color: #1e293b;
+    }
+
+    </style>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown("---")
+st.title("AI Resume Analyzer")
+# -----------------------------
+# SKILLS DATABASE
+# -----------------------------
+required_skills = [
+    "python", "java", "sql", "machine learning", "data analysis",
+    "html", "css", "javascript", "react", "flask", "django",
+    "power bi", "excel", "communication", "teamwork"
+]
 
-# ================= TOP METRICS ================= #
+# -----------------------------
+# RESUME TEXT EXTRACTION
+# -----------------------------
+def extract_text(pdf_file):
+    text = ""
+    with pdfplumber.open(pdf_file) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text
+    return text
 
-m1, m2, m3 = st.columns(3)
+# -----------------------------
+# EXTRACT NAME
+# -----------------------------
+def extract_name(text):
+    lines = text.split('\n')
 
-with m1:
-    st.metric("AI Model", "Active")
+    for line in lines[:5]:
+        line = line.strip()
 
-with m2:
-    st.metric("ATS Engine", "Running")
+        if len(line.split()) <= 3 and line.replace(' ', '').isalpha():
+            return line
 
-with m3:
-    st.metric("Occupations", "30+")
+    return "Candidate"
 
-st.markdown("---")
+# -----------------------------
+# SKILL EXTRACTION
+# -----------------------------
+def extract_skills(text):
+    text = text.lower()
 
-# ================= CENTERED INPUT SECTION ================= #
+    found_skills = []
 
-center1, center2, center3 = st.columns([1, 6, 1])
+    for skill in required_skills:
+        if skill.lower() in text:
+            found_skills.append(skill)
 
-with center2:
+    return found_skills
 
-    st.subheader("Upload Resume")
+# -----------------------------
+# SECTION DETECTION
+# -----------------------------
+def check_sections(text):
+    text = text.lower()
 
-    job_role = st.text_input(
-        "Target Occupation / Job Role",
-        placeholder="Doctor, Carpenter, Software Engineer, Painter..."
+    sections = {
+        "Education": "education" in text,
+        "Skills": "skills" in text,
+        "Projects": "project" in text,
+        "Experience": "experience" in text,
+        "Certifications": "certification" in text
+    }
+
+    return sections
+
+# -----------------------------
+# ATS SCORE CALCULATION
+# -----------------------------
+def calculate_ats_score(skills, sections, resume_text):
+
+    # Skill Score
+    skills_score = (len(skills) / len(required_skills)) * 100
+
+    # Section Score
+    total_sections = len(sections)
+    present_sections = sum(sections.values())
+    section_score = (present_sections / total_sections) * 100
+
+    # Resume Length Score
+    word_count = len(resume_text.split())
+
+    if word_count > 350:
+        resume_score = 100
+    elif word_count > 200:
+        resume_score = 80
+    else:
+        resume_score = 50
+
+    # Final Weighted Score
+    final_score = (
+        skills_score * 0.5 +
+        section_score * 0.3 +
+        resume_score * 0.2
     )
 
-    uploaded_file = st.file_uploader(
-        "Upload Resume PDF",
-        type=["pdf"]
-    )
+    return round(final_score, 2)
 
-# ================= ANALYSIS ================= #
+# -----------------------------
+# ATS LEVEL
+# -----------------------------
+def ats_level(score):
 
-if uploaded_file is not None:
+    if score >= 85:
+        return "Excellent"
 
-    resume_text = extract_text_from_pdf(
-        uploaded_file
-    )
+    elif score >= 70:
+        return "Good"
 
-    st.success(
-        "Resume uploaded successfully."
-    )
+    elif score >= 50:
+        return "Average"
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    else:
+        return "Needs Improvement"
 
-    # ================= CENTER CONTENT ================= #
+# -----------------------------
+# SMART FEEDBACK
+# -----------------------------
+def generate_feedback(score, sections):
 
-    left, main, right = st.columns([1, 8, 1])
+    feedback = []
 
-    with main:
+    if score >= 85:
+        feedback.append("Your resume is highly ATS optimized")
 
-        # ================= RESUME CONTENT ================= #
+    elif score >= 70:
+        feedback.append("Your resume looks strong but still has improvement opportunities ")
 
-        st.subheader("Resume Content")
+    else:
+        feedback.append("Your resume needs better optimization for ATS systems")
 
-        st.text_area(
-            "Extracted Resume Text",
-            resume_text,
-            height=300
-        )
+    if not sections["Projects"]:
+        feedback.append("Add projects section to showcase practical work")
 
-        st.markdown("<br>", unsafe_allow_html=True)
+    if not sections["Certifications"]:
+        feedback.append("Adding certifications can improve recruiter confidence")
 
-        # ================= ANALYZE BUTTON ================= #
+    if not sections["Experience"]:
+        feedback.append("Try adding internships or practical experience")
 
-        if st.button("Analyze Resume"):
+    return feedback
 
-            combined_text = (
-                resume_text + " " + job_role
-            )
+# -----------------------------
+# JOB DESCRIPTION MATCHING
+# -----------------------------
+def jd_match(resume_text, jd_text):
 
-            vector = tfidf.transform(
-                [combined_text]
-            )
+    documents = [resume_text, jd_text]
 
-            prediction = model.predict_proba(
-                vector
-            )[0][1]
+    tfidf = TfidfVectorizer()
+    matrix = tfidf.fit_transform(documents)
 
-            ats_score = int(prediction * 100)
+    similarity = cosine_similarity(matrix[0:1], matrix[1:2])
 
-            # ================= AI ANALYSIS ================= #
+    return round(similarity[0][0] * 100, 2)
 
-            st.markdown("---")
+# -----------------------------
+# CAREER ROLE PREDICTION
+# -----------------------------
+def predict_role(skills, resume_text):
 
-            st.subheader("AI Resume Analysis")
+    text = resume_text.lower()
+    skills = [s.lower() for s in skills]
 
-            # ================= ATS SCORE ================= #
+    if "machine learning" in text or "python" in text:
+        return "Data Science / ML Engineer"
 
-            fig = go.Figure(go.Indicator(
+    elif "react" in text or "javascript" in text:
+        return "Frontend Web Developer"
 
-                mode="gauge+number",
+    elif "sql" in text or "excel" in text:
+        return "Data Analyst"
 
-                value=ats_score,
+    elif "teaching" in text or "teacher" in text:
+        return "Teacher / Educator"
 
-                title={
-                    'text': "ATS Score"
-                },
+    elif "marketing" in text or "sales" in text:
+        return "Marketing & Sales"
 
-                gauge={
+    else:
+        return "General Technical Role"
 
-                    'axis': {
-                        'range': [0, 100]
-                    },
+# -----------------------------
+# SMART CAREER SUGGESTIONS
+# -----------------------------
+def career_based_suggestions(role, skills, sections):
 
-                    'bar': {
-                        'color': "#06b6d4"
-                    },
+    suggestions = []
 
-                    'steps': [
+    skills = [s.lower() for s in skills]
 
-                        {
-                            'range': [0, 50],
-                            'color': "#ef4444"
-                        },
+    # Teacher Role
+    if role == "Teacher / Educator":
 
-                        {
-                            'range': [50, 75],
-                            'color': "#f59e0b"
-                        },
+        if "communication" not in skills:
+            suggestions.append("Add communication skills because teaching roles highly value communication abilities")
 
-                        {
-                            'range': [75, 100],
-                            'color': "#22c55e"
-                        }
-                    ]
-                }
-            ))
+        if not sections["Experience"]:
+            suggestions.append("Try adding teaching experience, tutoring, or internship details")
 
-            fig.update_layout(
+        suggestions.append("Mention presentation, classroom handling, or mentoring skills")
 
-                paper_bgcolor="#111827",
+    # Marketing Role
+    elif role == "Marketing & Sales":
 
-                font={
-                    'color': "white"
-                },
+        if "communication" not in skills:
+            suggestions.append("Marketing resumes should include communication skills for better recruiter impact")
 
-                height=350
-            )
+        if not sections["Experience"]:
+            suggestions.append("Add sales achievements or marketing campaign experience")
 
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
+        suggestions.append("Include negotiation, leadership, and customer handling skills")
 
-            # ================= MISSING SKILLS ================= #
+    # Data Science Role
+    elif role == "Data Science / ML Engineer":
 
-            st.markdown("---")
+        if "machine learning" not in skills:
+            suggestions.append("Add machine learning related projects and skills")
 
-            st.subheader("Missing Skills")
+        suggestions.append("Include GitHub links and technical projects for better visibility")
 
-            resume_lower = resume_text.lower()
+    # Web Developer
+    elif role == "Frontend Web Developer":
 
-            required_skills = skills_db.get(
-                job_role.lower(),
-                []
-            )
+        suggestions.append("Add deployed project links and frontend technologies")
 
-            missing_skills = []
+        if not sections["Projects"]:
+            suggestions.append("Frontend resumes should include strong projects section")
 
-            for skill in required_skills:
+    # General Suggestions
+    suggestions.append("Add measurable achievements instead of general statements")
 
-                if skill not in resume_lower:
+    return suggestions
 
-                    missing_skills.append(skill)
+# -----------------------------
+# FILE UPLOAD
+# -----------------------------
+uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
 
-            if missing_skills:
+job_description = st.text_area("Paste Job Description (Optional)")
 
-                for skill in missing_skills:
+# -----------------------------
+# MAIN ANALYSIS
+# -----------------------------
+if uploaded_file:
 
-                    st.warning(skill)
+    resume_text = extract_text(uploaded_file)
 
-            else:
+    # Extract Name
+    user_name = extract_name(resume_text)
 
-                st.success(
-                    "No major skills missing."
-                )
+    # Greeting
+    st.subheader(f" Hey! {user_name}, let's analyze your resume!")
 
-            # ================= SPELLING ================= #
+    # Skills
+    skills = extract_skills(resume_text)
 
-            st.markdown("---")
+    # Sections
+    sections = check_sections(resume_text)
 
-            st.subheader(
-                "Spelling Suggestions"
-            )
+    # ATS Score
+    score = calculate_ats_score(skills, sections, resume_text)
 
-            corrected_text = check_spelling(
-                resume_text
-            )
+    # ATS Level
+    level = ats_level(score)
 
-            if corrected_text != resume_text:
+    # Role Prediction
+    role = predict_role(skills, resume_text)
 
-                st.info(
-                    "Possible spelling improvements detected."
-                )
+    # Career Suggestions
+    career_tips = career_based_suggestions(role, skills, sections)
 
-                st.text_area(
-                    "Corrected Resume",
-                    corrected_text,
-                    height=200
-                )
+    # -----------------------------
+    # SCORE DISPLAY
+    # -----------------------------
+    st.markdown("---")
 
-            else:
+    st.subheader("ATS Score")
 
-                st.success(
-                    "No major spelling issues found."
-                )
+    st.progress(int(score))
 
-            # ================= RESUME STRENGTH ================= #
+    st.success(f"ATS Score: {score}%")
 
-            st.markdown("---")
+    st.info(f"Resume Quality: {level}")
 
-            st.subheader(
-                "Resume Strength"
-            )
+    # -----------------------------
+    # ROLE PREDICTION
+    # -----------------------------
+    st.subheader(" Predicted Role")
+    st.write(role)
 
-            strength = 0
+    # -----------------------------
+    # SKILLS
+    # -----------------------------
+    st.subheader("Extracted Skills")
 
-            keywords = [
-                "project",
-                "experience",
-                "skills",
-                "education",
-                "certificate"
-            ]
+    if skills:
+        st.write(skills)
+    else:
+        st.warning("No major skills detected")
 
-            for word in keywords:
+    # -----------------------------
+    # SECTION CHECK
+    # -----------------------------
+    st.subheader("Resume Sections")
 
-                if word in resume_lower:
+    for section, status in sections.items():
 
-                    strength += 20
+        if status:
+            st.success(f" {section} Found")
 
-            st.progress(
-                strength / 100
-            )
+        else:
+            st.error(f" {section} Missing")
 
-            st.write(
-                f"Resume Strength: {strength}%"
-            )
+    # -----------------------------
+    # AI FEEDBACK
+    # -----------------------------
+    st.subheader("AI Resume Suggestions")
 
-            # ================= IMPROVEMENTS ================= #
+    feedback = generate_feedback(score, sections)
 
-            st.markdown("---")
+    for item in feedback:
+        st.write("•", item)
 
-            st.subheader(
-                "Improvement Suggestions"
-            )
+    # -----------------------------
+    # CAREER BASED IMPROVEMENTS
+    # -----------------------------
+    st.subheader(" Career-Based Improvement Suggestions")
 
-            if ats_score < 50:
+    for tip in career_tips:
+        st.write("✅", tip)
 
-                st.error(
-                    "Add more role-specific skills and projects."
-                )
+    # -----------------------------
+    # JOB DESCRIPTION MATCH
+    # -----------------------------
+    if job_description:
 
-                st.warning(
-                    "Resume needs stronger ATS keywords."
-                )
+        st.subheader(" Job Description Match")
 
-            elif ats_score < 75:
+        match_score = jd_match(resume_text, job_description)
 
-                st.warning(
-                    "Resume is moderately optimized."
-                )
+        st.progress(int(match_score))
 
-                st.info(
-                    "Improve technical skills and achievements."
-                )
+        st.success(f"Resume Match Score: {match_score}%")
 
-            else:
+        if match_score < 60:
+            st.warning("Your resume needs more matching keywords for this job ")
 
-                st.success(
-                    "Resume is highly optimized."
-                )
+        else:
+            st.success("Your resume matches the job description well ")
 
-                st.info(
-                    "Maintain concise professional formatting."
-                )
+    # -----------------------------
+    # FINAL MESSAGE
+    # -----------------------------
+    motivational_lines = [
+        f"{user_name}, your resume has potential ",
+        f"Great start {user_name}! A few improvements can make your resume stronger ",
+        f"{user_name}, recruiters love resumes with strong projects and skills ",
+        f"Keep improving your resume {user_name}! You're getting closer to your dream role "
+    ]
 
-            # ================= FINAL RECOMMENDATION ================= #
+    st.markdown("---")
 
-            st.markdown("---")
-
-            st.subheader(
-                "Final AI Recommendation"
-            )
-
-            st.info(
-                "Use measurable achievements, certifications, and role-specific keywords to improve hiring chances."
-            )
+    st.success(random.choice(motivational_lines))
