@@ -1,86 +1,69 @@
-# ====================== train_model.py ======================
-
 import pandas as pd
 import pickle
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
-data = {
+# -----------------------------
+# LOAD DATASET
+# -----------------------------
+df = pd.read_csv("datasets/Resume/Resume.csv")
 
-    "resume": [
+# -----------------------------
+# CHECK COLUMNS
+# -----------------------------
+print(df.columns)
 
-        "Python machine learning data analysis SQL projects",
+# -----------------------------
+# INPUT AND OUTPUT
+# -----------------------------
+X = df['Resume_str']
 
-        "HTML CSS JavaScript React frontend development",
+y = df['Category']
 
-        "Java Spring Boot backend APIs MySQL",
+# -----------------------------
+# TF-IDF VECTORIZATION
+# -----------------------------
+tfidf = TfidfVectorizer(stop_words='english')
 
-        "Python deep learning NLP TensorFlow AI",
+X_tfidf = tfidf.fit_transform(X)
 
-        "Excel Power BI SQL analytics dashboard",
-
-        "AutoCAD construction site management structural design",
-
-        "Patient care diagnosis communication clinical experience",
-
-        "Woodworking furniture cutting measurement",
-
-        "Marketing branding SEO communication",
-
-        "Accounting GST taxation financial reporting"
-    ],
-
-    "job_description": [
-
-        "Data Scientist Python SQL Machine Learning",
-
-        "Frontend Web Developer React JavaScript",
-
-        "Backend Java Developer Spring Boot",
-
-        "AI Engineer Deep Learning NLP",
-
-        "Data Analyst Power BI SQL",
-
-        "Civil Engineer AutoCAD Construction",
-
-        "Doctor Clinical Patient Care",
-
-        "Carpenter Furniture Woodworking",
-
-        "Marketing SEO Branding",
-
-        "Accountant GST Taxation"
-    ],
-
-    "label": [1, 1, 0, 1, 1, 1, 1, 0, 1, 1]
-}
-
-df = pd.DataFrame(data)
-
-df["combined_text"] = (
-    df["resume"] + " " + df["job_description"]
+# -----------------------------
+# TRAIN TEST SPLIT
+# -----------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X_tfidf,
+    y,
+    test_size=0.2,
+    random_state=42
 )
 
-tfidf = TfidfVectorizer()
+# -----------------------------
+# TRAIN MODEL
+# -----------------------------
+model = LogisticRegression(max_iter=1000)
 
-X = tfidf.fit_transform(df["combined_text"])
+model.fit(X_train, y_train)
 
-y = df["label"]
+# -----------------------------
+# PREDICTION
+# -----------------------------
+y_pred = model.predict(X_test)
 
-model = LogisticRegression()
+# -----------------------------
+# ACCURACY
+# -----------------------------
+accuracy = accuracy_score(y_test, y_pred)
 
-model.fit(X, y)
+print("Model Accuracy:", accuracy)
 
-pickle.dump(
-    model,
-    open("models/model.pkl", "wb")
-)
+# -----------------------------
+# SAVE MODEL
+# -----------------------------
+pickle.dump(model, open("models/model.pkl", "wb"))
 
-pickle.dump(
-    tfidf,
-    open("models/tfidf.pkl", "wb")
-)
+pickle.dump(tfidf, open("models/tfidf.pkl", "wb"))
 
-print("Model trained successfully.")
+print("Model and Vectorizer Saved Successfully!")
